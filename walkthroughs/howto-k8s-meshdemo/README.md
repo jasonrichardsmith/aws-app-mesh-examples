@@ -2,11 +2,20 @@
 
 In this demo we will deploy AWS App Mesh with the X-Ray daemon using tools like IAM Service Accounts with kubectl -k (kustomize) to demonstrate some of the AWS App Mesh features.
 
+## Table Contents
+1. ### [Requirments](#requirements)
+2. ### [Setup](#deploy-a-cluster)
+3. ### [The Demo](#the-demo)
+4. ### [Running The Services](#running-the-services)
+4. ### [Running The Services](#running-the-services)
+
+## 1. Requirements
+
 The tools needed for this demo are:
 - eksctl
 - kubectl (> 1.13)
 
-## Setup
+## 2. Setup
 
 ### Deploy a cluster
 Create a cluster using eksctl
@@ -24,23 +33,23 @@ eksctl utils associate-iam-oidc-provider --name meshdemo --approve
 Clone this repository
 ```
 git clone git@github.com:aws/aws-app-mesh-examples.git
-cd aws-app-mesh-examples/examples/apps/meshdemo
+cd aws-app-mesh-examples/walkthroughs/howto-k8s-meshdemo
 ```
 
-Deploy the [AWS App Mesh Controller](https://github.com/aws/aws-app-mesh-controller-for-k8s).
+### Deploy the [AWS App Mesh Controller](https://github.com/aws/aws-app-mesh-controller-for-k8s).
 ```bash
 kubectl apply -k kubernetes/mesh/kustomize/mesh-controller
 ```
 This also creates a namespace "meshdemo" for the below service account, and creates a mesh called "meshdemo".
 
-## Create a Service Account
+### Create a Service Account
 We create a service account so the X-Ray daemon can push to the X-Ray endpoint. 
 ```bash
 eksctl create iamserviceaccount --name xray-access --namespace meshdemo --cluster meshdemo \
 --attach-policy-arn arn:aws:iam::aws:policy/AWSXRayDaemonWriteAccess --approve --override-existing-serviceaccounts
 ```
 
-## The Demo
+## 3. The Demo
 
 The demo consists of a few services designed specifically to demonstrate AWS App Mesh features.
 
@@ -53,7 +62,7 @@ it cannot reach the external service.
 
 All the code for the applications can be found in the cat, colors and frontend folders of this folder.
 
-### Running the services
+## 4. Running The Services
 First we will start the base of the services.  This deploys the services, with an AWS X-Ray sidecar and an App Mesh sidecar.
 
 ```bash
@@ -75,20 +84,20 @@ You have 3 actions you can perform with this screen.
 - Rate: change the rate of requests
 - Header MyColor: every request sends a header value "MyColor", this drop down sets the color in that header.
 - Cats: changes to the cats tab, which is also sending requests according to the rate
-##### Colors
+#### Colors
 The Colors tab is showing you all the requests to the colors services.
 
-##### Cats
+#### Cats
 The Cats tabs is reloading the image in the screen with whatever the cats service returns.  If the cats service returns an error you will get this image:
 ![](frontend/error.jpg)
 When you start this will be the first problem to solve.
 
-### X-Ray
+#### X-Ray
 If you open your [X-Ray Console](https://eu-west-1.console.aws.amazon.com/xray/home?#/service-map) on the service map you should see the following graphic.
 ![](images/x-ray-no-cats.png)
 
-## AWS App Mesh Features
-### External services
+## 5: AWS App Mesh Features
+### 5.1: External services
 First open the "Cats" tab.
 
 You will see the error image.
@@ -151,7 +160,7 @@ If we drill down into the X-Ray traces we will see this:
 Cats is the only service that has X-Ray instrumentation for the external API.  All other services are being traced with the built in App Mesh capabilities.
 
 
-### Weighted routing.
+### 5.2: Weighted routing.
 
 Currently all requests for "/colors" are being routed to blue but there is a green pod running as well.
 
@@ -221,7 +230,7 @@ We can also see the green pod in X-Ray now as well.
 
 ![](images/x-ray-all-colors.png)
 
-### Header Routing
+### 5.3: Header Routing
 
 Currently color-route is not targetting my personal requests.
 
@@ -272,7 +281,7 @@ Now if you change the "Header MyColor" drop down to green, your requests will be
 
 ![](images/demo-header-traffic.png)
 
-### Retries
+### 5.4: Retries
 
 App Mesh has the ability to handle errors for us.  To see how this works we can inject errors into one of our services.
 
@@ -344,7 +353,7 @@ If we see this in X-Ray we can see there are still errors but they are confined 
 ![](images/x-ray-retry-errors.png)
 
 
-## Teardown
+## 6: Teardown
 
 Prior to tearing down the cluster we will want to destroy all the objects created through the AWs App Mesh Controller.
 
