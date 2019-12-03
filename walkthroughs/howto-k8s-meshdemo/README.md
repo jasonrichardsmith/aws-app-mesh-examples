@@ -281,7 +281,7 @@ Now if you change the "Header MyColor" drop down to green, your requests will be
 
 ![](images/demo-header-traffic.png)
 
-### 5.4: Retries
+### 5.4 Retries
 
 App Mesh has the ability to handle errors for us.  To see how this works we can inject errors into one of our services.
 
